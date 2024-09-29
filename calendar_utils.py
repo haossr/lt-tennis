@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 SCOPES = ['https://www.googleapis.com/auth/calendar']
 
 # Path to the Service Account JSON key file
-SERVICE_ACCOUNT_FILE = 'service_account.json'
+SERVICE_ACCOUNT_FILE = os.getenv("GOOGLE_APPLICATION_CREDENTIALS_PATH")
 CALENDAR_ID = os.getenv("CALENDAR_ID")
 
 def authenticate_google_calendar():

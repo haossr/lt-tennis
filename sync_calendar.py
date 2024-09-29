@@ -1,5 +1,6 @@
 import os
 import time
+from io import StringIO
 import logging
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -98,7 +99,7 @@ def get_booking_df() -> pd.DataFrame:
         logging.info("Retrieved reservation list.")
 
         # Parse HTML table using pandas
-        dfs = pd.read_html(table_html)
+        dfs = pd.read_html(StringIO(table_html))
         reservation_df = dfs[0]
 
         # Output reservation information

@@ -35,13 +35,16 @@ jobs:
           pip install selenium
           pip install pandas
           pip install --upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib
+          pip install lxml
 
       - name: Export GOOGLE_APPLICATION_CREDENTIALS
         run: echo "${{ secrets.GOOGLE_SERVICE_ACCOUNT }}" > "${HOME}/service_account.json"
 
       # Runs a set of commands using the runners shell
       - name: Run the calendar sync script
-        run: python sync_calendar.py
+        run: |
+          export GOOGLE_APPLICATION_CREDENTIALS_PATH="${HOME}/service_account.json"  
+          python sync_calendar.py
         env: # Or as an environment variable
           LT_USERNAME: ${{ secrets.LT_USERNAME }}
           LT_PASSWORD: ${{ secrets.LT_PASSWORD }}
