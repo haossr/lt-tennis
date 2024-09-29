@@ -18,11 +18,11 @@ start_time_text = "8:30am"       # Start time, e.g., '8:00am'
 max_attempts = 100               # Maximum number of attempts
 
 # Get username and password from environment variables
-username = os.getenv("USERNAME")
-password = os.getenv("PASSWORD")
+username = os.getenv("LT_USERNAME")
+password = os.getenv("LT_PASSWORD")
 
 if not username or not password:
-    logging.error("Please set USERNAME and PASSWORD environment variables.")
+    logging.error("Please set LT_USERNAME and LT_PASSWORD environment variables.")
     exit(1)
 
 
