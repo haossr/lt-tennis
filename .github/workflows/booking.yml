@@ -42,7 +42,7 @@ jobs:
 
       # Runs a set of commands using the runners shell
       - name: Run the reservation script
-        run: python booking.py
+        run: python your_script.py --reservation_date 10/06/2024 --start_time_text 8:00am 8:30am 9:00am --max_attempts 3 --interval_duration 90
           
         env: # Or as an environment variable
           LT_USERNAME: ${{ secrets.LT_USERNAME }}

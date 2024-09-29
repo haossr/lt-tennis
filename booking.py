@@ -1,6 +1,6 @@
 import os
-import time
 import logging
+import argparse
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
@@ -12,11 +12,6 @@ import pandas as pd
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 
-# Global variables
-reservation_date = "10/06/2024"  # Target date in MM/DD/YYYY format
-start_time_text = "8:30am"       # Start time, e.g., '8:00am'
-max_attempts = 100               # Maximum number of attempts
-
 # Get username and password from environment variables
 username = os.getenv("LT_USERNAME")
 password = os.getenv("LT_PASSWORD")
@@ -25,8 +20,7 @@ if not username or not password:
     logging.error("Please set LT_USERNAME and LT_PASSWORD environment variables.")
     exit(1)
 
-
-def make_reservation(reservation_date, start_time_text, max_attempts):
+def make_reservation(reservation_date, start_time_text_list, max_attempts, interval_duration):
     global username, password  # Use global variables for username and password
 
     # Configure the browser driver (Chrome in this example)
@@ -71,44 +65,48 @@ def make_reservation(reservation_date, start_time_text, max_attempts):
         date_field.send_keys(reservation_date)
         logging.info(f"Entered reservation date: {reservation_date}.")
 
-        # Select duration
-        duration_radio = driver.find_element(By.ID, "interval-90")
-        # Click parent element to ensure interaction is successful
+        # Select duration (use interval_duration argument)
+        duration_radio = driver.find_element(By.ID, f"interval-{interval_duration}")
         duration_parent = duration_radio.find_element(By.XPATH, "./..")
         duration_parent.click()
-        logging.info("Selected duration.")
+        logging.info(f"Selected duration: {interval_duration} minutes.")
 
         # Click search button
         search_button = wait.until(EC.element_to_be_clickable((By.ID, "reserve-court-search")))
         search_button.click()
         logging.info("Clicked search button.")
 
-        # Check if start time appears, try up to max_attempts times, wait 5 seconds between attempts
+        # Check if any of the start times in start_time_text_list appears, try up to max_attempts times
         attempt = 0
         found_start_time = False
 
         while attempt < max_attempts:
             try:
-                # Wait for start time link to appear (short wait time)
-                start_time_link = WebDriverWait(driver, 5).until(
-                    EC.element_to_be_clickable((By.XPATH, f"//a[contains(text(), '{start_time_text}')]"))
-                )
-                found_start_time = True
-                logging.info(f"Found start time {start_time_text} on attempt {attempt + 1}.")
-                break  # Found start time, exit loop
-            except:
+                for start_time_text in start_time_text_list:
+                    try:
+                        # Wait for a matching start time link to appear (short wait time)
+                        start_time_link = WebDriverWait(driver, 5).until(
+                            EC.element_to_be_clickable((By.XPATH, f"//a[contains(text(), '{start_time_text}')]"))
+                        )
+                        found_start_time = True
+                        logging.info(f"Found start time {start_time_text} on attempt {attempt + 1}.")
+                        start_time_link.click()
+                        break  # Exit inner loop if a start time is found
+                    except:
+                        continue  # Continue to the next start time in the list
+
+                if found_start_time:
+                    break  # Exit outer loop if a start time was found
+
+            except Exception as e:
                 attempt += 1
-                logging.info(f"Attempt {attempt}: Start time {start_time_text} not found, retrying in 5 seconds...")
+                logging.info(f"Attempt {attempt}: Start time not found, retrying in 5 seconds...")
                 search_button = wait.until(EC.element_to_be_clickable((By.ID, "reserve-court-search")))
                 search_button.click()
 
         if not found_start_time:
-            logging.error(f"After {max_attempts} attempts, start time {start_time_text} was not found.")
+            logging.error(f"After {max_attempts} attempts, none of the start times were found: {start_time_text_list}.")
             exit(1)
-
-        # Found start time, click link
-        start_time_link.click()
-        logging.info("Clicked on start time link.")
 
         # Confirm reservation
         confirm_button = wait.until(EC.element_to_be_clickable((By.ID, "confirm")))
@@ -133,11 +131,21 @@ def make_reservation(reservation_date, start_time_text, max_attempts):
         print(reservation_df)
 
     except Exception as e:
-        logging.info(f"An error occurred: {e}")
+        logging.error(f"An error occurred: {e}")
     finally:
         driver.quit()
         logging.info("Closed browser driver.")
 
 if __name__ == '__main__':
-    # Call the function with the variables
-    make_reservation(reservation_date, start_time_text, max_attempts)
+    # Set up argument parser
+    parser = argparse.ArgumentParser(description="Reserve tennis court via Selenium automation.")
+    parser.add_argument('--reservation_date', required=True, help="Target reservation date in MM/DD/YYYY format.")
+    parser.add_argument('--start_time_text', nargs='+', required=True, help="List of start times to check, e.g., '8:00am 8:30am'.")
+    parser.add_argument('--max_attempts', type=int, required=True, help="Maximum number of attempts to find the start time.")
+    parser.add_argument('--interval_duration', type=int, required=True, help="Duration of the reservation in minutes, e.g., '90'.")
+
+    # Parse arguments
+    args = parser.parse_args()
+
+    # Call the function with the parsed arguments
+    make_reservation(args.reservation_date, args.start_time_text, args.max_attempts, args.interval_duration)
