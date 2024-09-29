@@ -54,7 +54,7 @@ try:
     logging.info("Submitted login form.")
 
     # Wait for an element that confirms login was successful
-    wait.until(EC.presence_of_element_located((By.ID, "main-menu")))
+    wait.until(EC.presence_of_element_located((By.ID, "initial-page")))
     logging.info("Login successful.")
 
     # Navigate to reservation page
@@ -96,9 +96,7 @@ try:
             attempt += 1
             logging.info(f"Attempt {attempt}: Start time {start_time_text} not found, retrying in 5 seconds...")
             time.sleep(5)
-            # Optionally refresh page or click search button again
-            # driver.refresh()
-            # search_button.click()
+            search_button.click()
 
     if not found_start_time:
         logging.error(f"After {max_attempts} attempts, start time {start_time_text} was not found.")
