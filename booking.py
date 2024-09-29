@@ -13,7 +13,7 @@ import pandas as pd
 logging.basicConfig(level=logging.INFO)
 
 # Global variables
-reservation_date = "10/03/2024"  # Target date in MM/DD/YYYY format
+reservation_date = "10/06/2024"  # Target date in MM/DD/YYYY format
 start_time_text = "8:30am"       # Start time, e.g., '8:00am'
 max_attempts = 100               # Maximum number of attempts
 
@@ -72,7 +72,7 @@ def make_reservation(reservation_date, start_time_text, max_attempts):
         logging.info(f"Entered reservation date: {reservation_date}.")
 
         # Select duration
-        duration_radio = driver.find_element(By.ID, "interval-120")
+        duration_radio = driver.find_element(By.ID, "interval-90")
         # Click parent element to ensure interaction is successful
         duration_parent = duration_radio.find_element(By.XPATH, "./..")
         duration_parent.click()
@@ -133,7 +133,7 @@ def make_reservation(reservation_date, start_time_text, max_attempts):
         print(reservation_df)
 
     except Exception as e:
-        logging.error(f"An error occurred: {e}")
+        logging.info(f"An error occurred: {e}")
     finally:
         driver.quit()
         logging.info("Closed browser driver.")
