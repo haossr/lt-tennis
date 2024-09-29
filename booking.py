@@ -1,6 +1,7 @@
 import os
 import logging
 import argparse
+import time
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
@@ -75,7 +76,7 @@ def make_reservation(reservation_date, start_time_text_list, max_attempts, inter
         search_button = wait.until(EC.element_to_be_clickable((By.ID, "reserve-court-search")))
         search_button.click()
         logging.info("Clicked search button.")
-
+      
         # Check if any of the start times in start_time_text_list appears, try up to max_attempts times
         attempt = 0
         found_start_time = False
@@ -85,6 +86,7 @@ def make_reservation(reservation_date, start_time_text_list, max_attempts, inter
                 for start_time_text in start_time_text_list:
                     try:
                         # Wait for a matching start time link to appear (short wait time)
+                        logging.info(f"Looking for start time {start_time_text}...")
                         start_time_link = WebDriverWait(driver, 5).until(
                             EC.element_to_be_clickable((By.XPATH, f"//a[contains(text(), '{start_time_text}')]"))
                         )
@@ -92,20 +94,20 @@ def make_reservation(reservation_date, start_time_text_list, max_attempts, inter
                         logging.info(f"Found start time {start_time_text} on attempt {attempt + 1}.")
                         start_time_link.click()
                         break  # Exit inner loop if a start time is found
-                    except:
+
+                    except Exception as e:
                         continue  # Continue to the next start time in the list
-
-                if found_start_time:
-                    break  # Exit outer loop if a start time was found
-
+                attempt += 1
+                logging.info(f"Attempt {attempt}: Start time not found, retrying in 5 seconds...")
             except Exception as e:
+                logging.warning(f"An error occurred: {e}")
                 attempt += 1
                 logging.info(f"Attempt {attempt}: Start time not found, retrying in 5 seconds...")
                 search_button = wait.until(EC.element_to_be_clickable((By.ID, "reserve-court-search")))
                 search_button.click()
 
         if not found_start_time:
-            logging.error(f"After {max_attempts} attempts, none of the start times were found: {start_time_text_list}.")
+            logging.info(f"After {max_attempts} attempts, none of the start times were found: {start_time_text_list}.")
             exit(1)
 
         # Confirm reservation
