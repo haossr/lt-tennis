@@ -33,16 +33,25 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y chromium-browser
-          pip install selenium
-          pip install pandas
-          pip install --upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib
+      
+      # Cache pip dependencies
+      - name: Cache pip packages
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache/pip  # Directory to cache
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}  # Unique cache key based on OS and hash of requirements.txt
+          restore-keys: ${{ runner.os }}-pip- 
+
+      # Install dependencies
+      - name: Install dependencies
+        run: pip install -r requirements.txt
 
       - name: Export GOOGLE_APPLICATION_CREDENTIALS
         run: echo "${{ secrets.GOOGLE_SERVICE_ACCOUNT }}" > "${HOME}/service_account.json"
 
       # Runs a set of commands using the runners shell
       - name: Run the reservation script
-        run: python your_script.py --reservation_date 10/06/2024 --start_time_text 8:00am 8:30am 9:00am --max_attempts 3 --interval_duration 90
+        run: python booking.py --reservation_date 10/06/2024 --start_time_text 8:00am 8:30am 9:00am --max_attempts 3 --interval_duration 90
           
         env: # Or as an environment variable
           LT_USERNAME: ${{ secrets.LT_USERNAME }}

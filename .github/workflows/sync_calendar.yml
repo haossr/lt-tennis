@@ -32,13 +32,22 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y chromium-browser
-          pip install selenium
-          pip install pandas
-          pip install --upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib
-          pip install lxml
+      
+      # Cache pip dependencies
+      - name: Cache pip packages
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache/pip  # Directory to cache
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}  # Unique cache key based on OS and hash of requirements.txt
+          restore-keys: ${{ runner.os }}-pip- 
+
+      # Install dependencies
+      - name: Install dependencies
+        run: pip install -r requirements.txt
 
       - name: Export GOOGLE_APPLICATION_CREDENTIALS
-        run:  printf "%s" "${{ secrets.GOOGLE_SERVICE_ACCOUNT }}" > "${HOME}/service_account.json"
+        run: |
+          echo "${{ secrets.GOOGLE_SERVICE_ACCOUNT_BASE64 }}" | base64 --decode > "${HOME}/service_account.json"
 
       # Runs a set of commands using the runners shell
       - name: Run the calendar sync script
