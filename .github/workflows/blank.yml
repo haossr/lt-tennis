@@ -38,3 +38,6 @@ jobs:
       # Runs a set of commands using the runners shell
       - name: Run the reservation script
         run: python booking.py
+        env: # Or as an environment variable
+          USERNAME: ${{ secrets.USERNAME }}
+          PASSWORD: ${{ secrets.PASSWORD }}
