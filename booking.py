@@ -108,7 +108,7 @@ def make_reservation(reservation_date, start_time_text_list, max_attempts, inter
 
         if not found_start_time:
             logging.info(f"After {max_attempts} attempts, none of the start times were found: {start_time_text_list}.")
-            exit(1)
+            exit(0)
 
         # Confirm reservation
         confirm_button = wait.until(EC.element_to_be_clickable((By.ID, "confirm")))
