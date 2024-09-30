@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with Actions
 
-name: Book Tennis Court
+name: Book Tennis Court (7 days ahead)
 
 on:
   # Triggers the workflow on push or pull request events but only for the "main" branch
@@ -9,7 +9,7 @@ on:
   pull_request:
     branches: [ "main" ]
   schedule:
-    - cron: '55 18 * * *'  # UTC 时间18:55，每天加州时间11:55运行（夏令时）
+    - cron: "55 18 * * 6,0"  # 6 = Saturday, 0 = Sunday # UTC 时间18:55，每天加州时间11:55运行（夏令时）
     # - cron: '55 19 * * *'  # UTC 时间19:55，每天加州时间11:55运行（标准时间）（11 月至次年 3 月）：
 
   # Allows you to run this workflow manually from the Actions tab
@@ -51,7 +51,11 @@ jobs:
 
       # Runs a set of commands using the runners shell
       - name: Run the reservation script
-        run: python booking.py --reservation_date 10/06/2024 --start_time_text 8:00am 8:30am 9:00am --max_attempts 3 --interval_duration 90
+        run: |
+          reservation_date=$(date -d "+7 days" +"%m/%d/%Y")
+          echo "Reservation date: $reservation_date"
+          python booking.py --reservation_date "$reservation_date" --start_time_text 8:30am 8:00am --max_attempts 10 --interval_duration 90
+          python booking.py --reservation_date "$reservation_date" --start_time_text 8:30am 8:00am 9:00am --max_attempts 10 --interval_duration 60
           
         env: # Or as an environment variable
           LT_USERNAME: ${{ secrets.LT_USERNAME }}
